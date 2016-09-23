@@ -3,7 +3,7 @@ Using PayPal Standard IPN
 
 1. Edit ``settings.py`` and add ``paypal.standard.ipn`` to your ``INSTALLED_APPS``:
 
-   settings.py:
+   ``settings.py``:
 
    .. code-block:: python
 
@@ -20,6 +20,7 @@ Using PayPal Standard IPN
    set PAYPAL_TEST to True.
 
    .. code-block:: python
+
        PAYPAL_TEST = True
 
 
@@ -33,13 +34,18 @@ Using PayPal Standard IPN
    payment, and pass it through the ``initial`` parameter when creating the
    ``PayPalPaymentsForm``.
 
-   Call ``render`` on the instance in your template to
-   write out the HTML.
+   Please note: **This form is not used like a normal Django form** that posts
+   back to a Django view. Rather it is a GET form that has a single button
+   which sends all the data to PayPal. You simply need to call ``render``
+   on the instance in your template to write out the HTML, which includes
+   the ``<form>`` tag with the correct endpoint.
 
-   views.py:
+   ``views.py``:
 
    .. code-block:: python
 
+       from django.core.urlresolvers import reverse
+       from django.shortcuts import render
        from paypal.standard.forms import PayPalPaymentsForm
 
        def view_that_asks_for_money(request):
@@ -65,7 +71,7 @@ Using PayPal Standard IPN
    For a full list of variables that can be used in ``paypal_dict``, see
    `PayPal HTML variables documentation <https://developer.paypal.com/webapps/developer/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/>`_.
 
-   payment.html:
+   ``payment.html``:
 
    .. code-block:: html
 
@@ -99,7 +105,7 @@ Using PayPal Standard IPN
      This indicates a correct, non-duplicate IPN message from PayPal. The
      handler will receive a :class:`paypal.standard.ipn.models.PayPalIPN` object
      as the sender. You will need to check the ``payment_status`` attribute, and
-     the ``receiver_email`` to make sure that the account receiving the payment
+     the ``business`` to make sure that the account receiving the payment
      is the expected one, as well as other attributes to know what action to
      take.
 
@@ -196,4 +202,3 @@ See also
 
 * :doc:`subscriptions`
 * :doc:`encrypted_buttons`
-
