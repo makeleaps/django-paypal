@@ -13,10 +13,11 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from paypal.standard.conf import (
-    DONATION_IMAGE, DONATION_SANDBOX_IMAGE, IMAGE, POSTBACK_ENDPOINT, SANDBOX_IMAGE, SANDBOX_POSTBACK_ENDPOINT,
-    SUBSCRIPTION_IMAGE, SUBSCRIPTION_SANDBOX_IMAGE
+    BUY_BUTTON_IMAGE, DONATION_BUTTON_IMAGE, PAYPAL_CERT, PAYPAL_CERT_ID, PAYPAL_PRIVATE_CERT, PAYPAL_PUBLIC_CERT,
+    POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT, SUBSCRIPTION_BUTTON_IMAGE
 )
 from paypal.standard.widgets import ReservedValueHiddenInput, ValueHiddenInput
+from paypal.utils import warn_untested
 
 log = logging.getLogger(__name__)
 
@@ -72,6 +73,8 @@ class PayPalDateTimeField(forms.DateTimeField):
             # PST/PDT is 'US/Pacific'
             dt = timezone.pytz.timezone('US/Pacific').localize(
                 dt, is_dst=zone_part == 'PDT')
+            if not settings.USE_TZ:
+                dt = timezone.make_naive(dt, timezone=timezone.utc)
         return dt
 
 
@@ -198,21 +201,21 @@ class PayPalPaymentsForm(forms.Form):
 
     def get_image(self):
         return {
-            (True, self.SUBSCRIBE): SUBSCRIPTION_SANDBOX_IMAGE,
-            (True, self.BUY): SANDBOX_IMAGE,
-            (True, self.DONATE): DONATION_SANDBOX_IMAGE,
-            (False, self.SUBSCRIBE): SUBSCRIPTION_IMAGE,
-            (False, self.BUY): IMAGE,
-            (False, self.DONATE): DONATION_IMAGE,
-        }[self.test_mode(), self.button_type]
+            self.SUBSCRIBE: SUBSCRIPTION_BUTTON_IMAGE,
+            self.BUY: BUY_BUTTON_IMAGE,
+            self.DONATE: DONATION_BUTTON_IMAGE,
+        }[self.button_type]
 
     def is_transaction(self):
+        warn_untested()
         return not self.is_subscription()
 
     def is_donation(self):
+        warn_untested()
         return self.button_type == self.DONATE
 
     def is_subscription(self):
+        warn_untested()
         return self.button_type == self.SUBSCRIBE
 
 
@@ -226,17 +229,22 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
 
     """
 
+    def __init__(self, private_cert=PAYPAL_PRIVATE_CERT, public_cert=PAYPAL_PUBLIC_CERT,
+            paypal_cert=PAYPAL_CERT, cert_id=PAYPAL_CERT_ID, *args, **kwargs):
+        warn_untested()
+        super(PayPalEncryptedPaymentsForm, self).__init__(*args, **kwargs)
+        self.private_cert = private_cert
+        self.public_cert = public_cert
+        self.paypal_cert = paypal_cert
+        self.cert_id = cert_id
+
     def _encrypt(self):
         """Use your key thing to encrypt things."""
+        warn_untested()
         from M2Crypto import BIO, SMIME, X509
-        # @@@ Could we move this to conf.py?
-        CERT = settings.PAYPAL_PRIVATE_CERT
-        PUB_CERT = settings.PAYPAL_PUBLIC_CERT
-        PAYPAL_CERT = settings.PAYPAL_CERT
-        CERT_ID = settings.PAYPAL_CERT_ID
 
         # Iterate through the fields and pull out the ones that have a value.
-        plaintext = 'cert_id=%s\n' % CERT_ID
+        plaintext = 'cert_id=%s\n' % self.cert_id
         for name, field in self.fields.items():
             value = None
             if name in self.initial:
@@ -252,9 +260,9 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
 
         # Begin crypto weirdness.
         s = SMIME.SMIME()
-        s.load_key_bio(BIO.openfile(CERT), BIO.openfile(PUB_CERT))
+        s.load_key_bio(BIO.openfile(self.private_cert), BIO.openfile(self.public_cert))
         p7 = s.sign(BIO.MemoryBuffer(plaintext), flags=SMIME.PKCS7_BINARY)
-        x509 = X509.load_cert_bio(BIO.openfile(PAYPAL_CERT))
+        x509 = X509.load_cert_bio(BIO.openfile(self.paypal_cert))
         sk = X509.X509_Stack()
         sk.push(x509)
         s.set_x509_stack(sk)
@@ -267,6 +275,7 @@ class PayPalEncryptedPaymentsForm(PayPalPaymentsForm):
         return out.read()
 
     def as_p(self):
+        warn_untested()
         return mark_safe(u"""
 <input type="hidden" name="cmd" value="_s-xclick" />
 <input type="hidden" name="encrypted" value="%s" />
@@ -284,6 +293,7 @@ class PayPalSharedSecretEncryptedPaymentsForm(PayPalEncryptedPaymentsForm):
 
     def __init__(self, *args, **kwargs):
         "Make the secret from the form initial data and slip it into the form."
+        warn_untested()
         from paypal.standard.helpers import make_secret
 
         super(PayPalSharedSecretEncryptedPaymentsForm, self).__init__(*args, **kwargs)
