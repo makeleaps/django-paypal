@@ -4,7 +4,7 @@ python: 3.5  # this is needed to fool travis to have python3.5 as well
 env:
 - TOXENV=checkmanifest
 - TOXENV=flake8-check
-- TOXENV=isort-checke
+- TOXENV=isort-check
 - TOXENV=py27-django18-tests-usetztrue
 - TOXENV=py27-django110-tests-usetztrue
 - TOXENV=py27-django111-tests-usetzfalse
