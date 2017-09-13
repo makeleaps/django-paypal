@@ -8,7 +8,7 @@ env:
 - TOXENV=py27-django18-tests-usetztrue
 - TOXENV=py27-django110-tests-usetztrue
 - TOXENV=py27-django111-tests-usetzfalse
-- TOXENV=py27-django111-tests-usetztru
+- TOXENV=py27-django111-tests-usetztrue
 - TOXENV=py35-django110-tests-usetztrue
 - TOXENV=py35-django111-tests-usetzfalse
 - TOXENV=py35-django111-tests-usetztrue
