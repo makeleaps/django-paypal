@@ -284,6 +284,7 @@ class PayPalStandardBase(Model):
 
     def is_subscription_failed(self):
         warn_untested()
+
         return self.txn_type == "subscr_failed"
 
     def is_subscription_cancellation(self):

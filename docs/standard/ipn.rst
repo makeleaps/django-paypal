@@ -74,6 +74,7 @@ Using PayPal Standard IPN
    .. note:: The names of these variables are not the same as the values
              returned on the IPN object.
 
+
    ``payment.html``:
 
    .. code-block:: html

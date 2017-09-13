@@ -19,6 +19,10 @@ CONTENT_TYPE_ERROR = ("Invalid Content-Type - PayPal is only expected to use "
                       "application/x-www-form-urlencoded. If using django's "
                       "test Client, set `content_type` explicitly")
 
+CONTENT_TYPE_ERROR = ("Invalid Content-Type - PayPal is only expected to use "
+                      "application/x-www-form-urlencoded. If using django's "
+                      "test Client, set `content_type` explicitly")
+
 
 @require_POST
 @csrf_exempt
