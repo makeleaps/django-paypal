@@ -45,6 +45,7 @@ Version 0.3.3
 
 * Fixed issue #147 - compatibility with Django 1.10
 
+
 Version 0.3.2
 -------------
 
