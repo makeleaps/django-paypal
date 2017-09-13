@@ -23,7 +23,7 @@ class PayPalIPN(PayPalStandardBase):
 
     def _postback(self):
         """Perform PayPal Postback validation."""
-        r = requests.post(self.get_endpoint(), data=b("cmd=_notify-validate&" + self.query.encode("ascii")))
+        r = requests.post(self.get_endpoint(), data=b"cmd=_notify-validate&" + self.query.encode("ascii"))
         r.raise_for_status()
         return r.content
 
