@@ -491,7 +491,7 @@ class IPNTest(MockedPostbackMixin, IPNUtilsMixin, TestCase):
         with self.assertRaises(AssertionError) as assert_context:
             self.client.post("/ipn/", {}, content_type='application/json')
 
-        self.assertEqual(assert_context.exception.message,
+        self.assertEqual(assert_context.exception.args[0],
                          CONTENT_TYPE_ERROR)
         self.assertFalse(PayPalIPN.objects.exists())
 
