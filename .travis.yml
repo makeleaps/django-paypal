@@ -13,8 +13,7 @@ env:
 - TOXENV=py35-django111-tests-usetzfalse
 - TOXENV=py35-django111-tests-usetztrue
 - TOXENV=py35-django19-tests-usetztrue
-- TOXENV=py36-django111-tests-usetzfalse
-- TOXENV=py36-django111-tests-usetztrue
+
 
 before_install:
   - sudo apt-get -qq update
