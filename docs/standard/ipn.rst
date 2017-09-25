@@ -56,10 +56,10 @@ Using PayPal Standard IPN
                "amount": "10000000.00",
                "item_name": "name of the item",
                "invoice": "unique-invoice-id",
-               "notify_url": "https://www.example.com" + reverse('paypal-ipn'),
-               "return_url": "https://www.example.com/your-return-location/",
-               "cancel_return": "https://www.example.com/your-cancel-location/",
-               "custom": "Upgrade all users!",  # Custom command to correlate to some function later (optional)
+               "notify_url": request.build_absolute_uri(reverse('paypal-ipn')),
+               "return_url": request.build_absolute_uri(reverse('your-return-view')),
+               "cancel_return": request.build_absolute_uri(reverse('your-cancel-view')),
+               "custom": "premium_plan",  # Custom command to correlate to some function later (optional)
            }
 
            # Create the instance.
@@ -71,6 +71,10 @@ Using PayPal Standard IPN
    For a full list of variables that can be used in ``paypal_dict``, see
    `PayPal HTML variables documentation <https://developer.paypal.com/webapps/developer/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/>`_.
 
+   .. note:: The names of these variables are not the same as the values
+             returned on the IPN object.
+
+
    ``payment.html``:
 
    .. code-block:: html
@@ -80,6 +84,9 @@ Using PayPal Standard IPN
        <!-- writes out the form tag automatically -->
        {{ form.render }}
 
+   The image used for the button can be customized using the :doc:`/settings`, or
+   by subclassing ``PayPalPaymentsForm`` and overriding the ``get_image``
+   method.
 
 4. When someone uses this button to buy something PayPal makes a HTTP POST to
    your "notify_url". PayPal calls this Instant Payment Notification (IPN).
@@ -125,7 +132,7 @@ Using PayPal Standard IPN
    <http://django-paypal.readthedocs.org/en/v0.1.5/standard/ipn.html>`_)
 
 
-   Example code:
+   Example code: signals.py
 
    .. code-block:: python
 
@@ -137,22 +144,40 @@ Using PayPal Standard IPN
            if ipn_obj.payment_status == ST_PP_COMPLETED:
                # WARNING !
                # Check that the receiver email is the same we previously
-               # set on the business field request. (The user could tamper
-               # with those fields on payment form before send it to PayPal)
+               # set on the `business` field. (The user could tamper with
+               # that fields on the payment form before it goes to PayPal)
                if ipn_obj.receiver_email != "receiver_email@example.com":
                    # Not a valid payment
                    return
 
                # ALSO: for the same reason, you need to check the amount
-               # received etc. are all what you expect.
+               # received, `custom` etc. are all what you expect or what
+               # is allowed.
 
                # Undertake some action depending upon `ipn_obj`.
-               if ipn_obj.custom == "Upgrade all users!":
-                   Users.objects.update(paid=True)
+               if ipn_obj.custom == "premium_plan":
+                   price = ...
+               else:
+                   price = ...
+
+               if ipn_obj.mc_gross == price and ipn.mc_currency == 'USD':
+                   ...
            else:
                #...
 
        valid_ipn_received.connect(show_me_the_money)
+
+   Remember to import the signals file at the end of your models.py: (or, in 
+   `AppConfig.ready() <https://docs.djangoproject.com/en/1.11/ref/applications/#django.apps.AppConfig.ready>`_
+   function, you'll need 
+   `this <https://docs.djangoproject.com/en/1.11/ref/applications/#configuring-applications>`_
+   too)
+
+   .. code-block:: python
+
+       # bellow comment would tell PyCharm not to delete this import during optimize imports
+       # noinspection PyUnresolvedReferences
+       from YOUR_APP_NAME import signals
 
    See the :doc:`variables` documentation for information about attributes on
    the IPN object that you can use.
@@ -160,9 +185,11 @@ Using PayPal Standard IPN
 6. You will also need to implement the ``return_url`` and ``cancel_return`` views
    to handle someone returning from PayPal.
 
-   Note that return_url view needs ``@csrf_exempt`` applied to it, because
-   PayPal will POST to it, so it should be custom a view that doesn't need to
-   handle POSTs otherwise.
+   Note that ``return_url`` view may need ``@csrf_exempt`` applied to it,
+   because PayPal may POST to it (depending on the value of the
+   `rm parameter <https://developer.paypal.com/webapps/developer/docs/classic/paypal-payments-standard/integration-guide/Appx_websitestandard_htmlvariables/#paypal-checkout-page-variables>`_
+   and possibly other settings), so it should be a custom view that doesn't need
+   to handle POSTs otherwise.
 
    When using PayPal Standard with Subscriptions this is not necessary since
    PayPal will route the user back to your site via GET.
@@ -180,7 +207,8 @@ your machine is behind a firewall/router and therefore is not publicly
 accessible on the internet (this will be the case for most developer machines),
 PayPal will not be able to post back to your view. You will need to use a tool
 like https://ngrok.com/ to make your machine publicly accessible, and ensure
-that you are sending PayPal your public URL, not ``localhost``.
+that you are sending PayPal your public URL, not ``localhost``, in the
+``notify_url``, ``return_url`` and ``cancel_return`` fields.
 
 Simulator testing
 -----------------

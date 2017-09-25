@@ -2,10 +2,49 @@
  Release notes
 ===============
 
-Version 0.3.3 (under development)
----------------------------------
+Version 0.4.1
+-------------
 
-* Fixed issue #147 - compatibility issue with Django 1.10 (alpha)
+* Added forgotten docs file
+
+Version 0.4.0
+-------------
+
+* Cleaned up and documented all settings related to button images. Specifically:
+
+  * The default images have been updated to recent ones. This is backwards
+    incompatible if you were relying on the previous (very old) image and had
+    not set ``PAYPAL_IMAGE`` in your settings.
+
+  * Removed separate settings for sandbox mode - these only meant more work when
+    configuring, and production looked different from sandbox by default. This
+    is backwards incompatible, but only affects development mode.
+
+  * Names of settings made clearer. The new names are:
+
+    * ``PAYPAL_BUY_BUTTON_IMAGE`` (was: ``PAYPAL_IMAGE``)
+    * ``PAYPAL_DONATION_BUTTON_IMAGE`` (was: ``PAYPAL_DONATION_IMAGE``)
+    * ``PAYPAL_SUBSCRIPTION_BUTTON_IMAGE`` (was: ``PAYPAL_SUBSCRIPTION_IMAGE``)
+
+
+Version 0.3.6
+-------------
+
+* Version bump due to messed up version numbers in previous release.
+
+Version 0.3.4
+-------------
+
+* Use multi certificates with PaypalEncryptedPaymentsForm
+* Fixed issue #166 - regression from 0.2.7 when using ``USE_TZ=False``
+* Django 1.11 compatibility.
+* Added warnings for untested code.
+
+Version 0.3.3
+-------------
+
+* Fixed issue #147 - compatibility with Django 1.10
+
 
 Version 0.3.2
 -------------

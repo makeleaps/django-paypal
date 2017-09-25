@@ -10,6 +10,7 @@ from six.moves.urllib.parse import unquote_plus
 
 from paypal.standard.conf import POSTBACK_ENDPOINT, SANDBOX_POSTBACK_ENDPOINT
 from paypal.standard.models import PayPalStandardBase
+from paypal.utils import warn_untested
 
 
 # ### Todo: Move this logic to conf.py:
@@ -67,6 +68,7 @@ class PayPalPDT(PayPalStandardBase):
                 self.st = unquoted_line
             else:
                 if self.st != "SUCCESS":
+                    warn_untested()
                     self.set_flag(line)
                     break
                 try:
